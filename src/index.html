@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NodeUxPlay</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Titlebar -->
+  <div class="titlebar" id="titlebar">
+    <div class="titlebar-drag">
+      <span class="titlebar-icon">&#9654;</span>
+      <span class="titlebar-title">NodeUxPlay</span>
+      <span class="titlebar-subtitle">AirPlay Server for Windows</span>
+    </div>
+    <div class="titlebar-controls">
+      <button class="tb-btn tb-min" onclick="api.minimize()">&#x2015;</button>
+      <button class="tb-btn tb-max" onclick="api.maximize()">&#9744;</button>
+      <button class="tb-btn tb-close" onclick="api.close()">&#10005;</button>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="nav-group">
+        <button class="nav-btn active" data-view="setup">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <span>Setup</span>
+        </button>
+        <button class="nav-btn" data-view="dashboard">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-btn" data-view="settings">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <span>Settings</span>
+        </button>
+      </div>
+
+      <div class="nav-separator"></div>
+      <div class="nav-section-label">INSTANCES</div>
+      <div class="nav-instances" id="nav-instances">
+        <!-- Dynamic instance buttons rendered by JS -->
+      </div>
+      <div class="nav-bottom">
+        <button class="btn btn-sm nav-add-btn" id="btn-add-instance" onclick="addInstance()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Instance
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="main-wrapper">
+      <!-- Setup overlay -->
+      <div class="setup-overlay" id="setup-overlay">
+        <div class="setup-overlay-content">
+          <button class="btn btn-sm overlay-toggle-btn" id="overlay-toggle-btn" onclick="toggleOverlayMinimize()" title="Minimize">
+            <svg id="overlay-toggle-icon-min" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <svg id="overlay-toggle-icon-max" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polyline points="15,3 21,3 21,9"/><polyline points="9,21 3,21 3,15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            <span id="overlay-toggle-label">Minimize</span>
+          </button>
+          <div class="setup-overlay-spinner"></div>
+          <h2 id="setup-overlay-title">Installing Dependencies...</h2>
+          <p id="setup-overlay-desc">Please wait. Do not close the application.</p>
+
+          <div class="setup-steps" id="setup-steps">
+            <div class="setup-step" data-step="1">
+              <div class="setup-step-header">
+                <span class="setup-step-num">1</span>
+                <span class="setup-step-label">MSYS2 Environment</span>
+                <span class="setup-step-badge" id="step-1-badge">Pending</span>
+              </div>
+              <div class="setup-step-track"><div class="setup-step-fill" id="step-1-fill"></div></div>
+            </div>
+            <div class="setup-step" data-step="2">
+              <div class="setup-step-header">
+                <span class="setup-step-num">2</span>
+                <span class="setup-step-label">Bonjour SDK</span>
+                <span class="setup-step-badge" id="step-2-badge">Pending</span>
+              </div>
+              <div class="setup-step-track"><div class="setup-step-fill" id="step-2-fill"></div></div>
+            </div>
+            <div class="setup-step" data-step="3">
+              <div class="setup-step-header">
+                <span class="setup-step-num">3</span>
+                <span class="setup-step-label">Build Tools &amp; Packages</span>
+                <span class="setup-step-badge" id="step-3-badge">Pending</span>
+              </div>
+              <div class="setup-step-track"><div class="setup-step-fill" id="step-3-fill"></div></div>
+            </div>
+            <div class="setup-step" data-step="4">
+              <div class="setup-step-header">
+                <span class="setup-step-num">4</span>
+                <span class="setup-step-label">Build UxPlay</span>
+                <span class="setup-step-badge" id="step-4-badge">Pending</span>
+              </div>
+              <div class="setup-step-track"><div class="setup-step-fill" id="step-4-fill"></div></div>
+            </div>
+          </div>
+
+          <p class="setup-overlay-note">Check the Output panel below for detailed logs.</p>
+        </div>
+      </div>
+
+      <div class="content-area" id="content-area">
+
+        <!-- ═══ SETUP TAB ═══ -->
+        <div class="tab-content active" id="tab-setup">
+          <h2>Setup &amp; Dependencies</h2>
+          <p class="tab-desc">NodeUxPlay will automatically install and configure everything needed to run UxPlay on Windows.</p>
+
+          <div class="dep-grid">
+            <div class="dep-card" id="dep-msys2">
+              <div class="dep-header">
+                <div class="dep-status" data-status="unknown">?</div>
+                <div class="dep-info">
+                  <h3>MSYS2</h3>
+                  <p>Unix-like build environment for Windows</p>
+                </div>
+              </div>
+              <div class="dep-actions">
+                <button class="btn btn-sm" onclick="installMsys2()">Install</button>
+                <button class="btn btn-sm dep-info-btn" data-tooltip="MSYS2 provides a Unix-like shell and package manager (pacman) needed to compile UxPlay and its dependencies on Windows.&#10;&#10;Install path: C:\msys64&#10;Environment: UCRT64&#10;Size: ~500 MB installed&#10;&#10;Installed automatically via the official MSYS2 installer.">Info</button>
+                <button class="btn btn-sm btn-danger" onclick="uninstallMsys2()" title="Remove MSYS2">Uninstall</button>
+              </div>
+            </div>
+
+            <div class="dep-card" id="dep-bonjour">
+              <div class="dep-header">
+                <div class="dep-status" data-status="unknown">?</div>
+                <div class="dep-info">
+                  <h3>Bonjour SDK</h3>
+                  <p>Apple's DNS-SD service discovery (required for build)</p>
+                </div>
+              </div>
+              <div class="dep-actions">
+                <button class="btn btn-sm" onclick="installBonjour()">Download</button>
+                <button class="btn btn-sm dep-info-btn" data-tooltip="Apple's DNS Service Discovery library, required to build UxPlay. Must be installed manually.&#10;&#10;Install path: C:\Program Files\Bonjour SDK&#10;Download: Apple or Softpedia&#10;&#10;After installing, click Re-check to verify.">Info</button>
+                <button class="btn btn-sm btn-danger" onclick="uninstallBonjour()" title="Open Windows Apps to uninstall">Uninstall</button>
+              </div>
+            </div>
+
+            <div class="dep-card" id="dep-build">
+              <div class="dep-header">
+                <div class="dep-status" data-status="unknown">?</div>
+                <div class="dep-info">
+                  <h3>Build Tools &amp; Dependencies</h3>
+                  <p>GCC, CMake, GStreamer, libplist, plugins</p>
+                </div>
+              </div>
+              <div class="dep-actions">
+                <button class="btn btn-sm" onclick="installPackages()">Install All</button>
+                <button class="btn btn-sm dep-info-btn" data-tooltip="Installs via MSYS2 pacman (UCRT64):&#10;&#10;• GCC &amp; CMake — C/C++ compiler and build system&#10;• GStreamer — multimedia framework for video/audio&#10;• gst-plugins-base/good/bad — codec and sink plugins&#10;• gst-libav — FFmpeg-based decoders&#10;• libplist — Apple property list library&#10;• OpenSSL — encryption library&#10;• git — for cloning UxPlay source&#10;&#10;All installed to C:\msys64\ucrt64">Info</button>
+                <button class="btn btn-sm btn-danger" onclick="uninstallPackages()" title="Remove packages">Uninstall</button>
+              </div>
+            </div>
+
+            <div class="dep-card" id="dep-uxplay">
+              <div class="dep-header">
+                <div class="dep-status" data-status="unknown">?</div>
+                <div class="dep-info">
+                  <h3>UxPlay</h3>
+                  <p id="uxplay-version-info">AirPlay server binary</p>
+                </div>
+              </div>
+              <div class="dep-actions">
+                <button class="btn btn-sm" onclick="buildUxplay()">Build</button>
+                <button class="btn btn-sm dep-info-btn" data-tooltip="UxPlay — open-source AirPlay server by FDH2.&#10;&#10;Source: github.com/FDH2/UxPlay&#10;Binary: C:\msys64\ucrt64\bin\uxplay.exe&#10;Source cache: %AppData%\node-uxplay\UxPlay&#10;&#10;Built from the latest release tag using CMake + Ninja inside MSYS2. Supports AirPlay Mirror and Audio modes.">Info</button>
+                <button class="btn btn-sm btn-danger" onclick="uninstallUxplayOnly()" title="Remove UxPlay">Uninstall</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="setup-actions">
+            <button class="btn btn-primary btn-lg" id="btn-full-setup" onclick="runFullSetup()">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0022 16z"/><polyline points="7.5,4.21 12,6.81 16.5,4.21"/><polyline points="7.5,19.79 7.5,14.6 3,12"/><polyline points="21,12 16.5,14.6 16.5,19.79"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+              Full Auto Setup
+            </button>
+            <button class="btn btn-secondary" id="btn-recheck" onclick="checkDeps()">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,6 13.5,15.5 8.5,10.5"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              Re-check
+            </button>
+            <button class="btn btn-danger" id="btn-uninstall" onclick="uninstallAll()">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6M8,6V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              Uninstall All
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══ DASHBOARD TAB ═══ -->
+        <div class="tab-content" id="tab-dashboard">
+          <h2>Dashboard</h2>
+          <p class="tab-desc">Monitor and control all UxPlay instances from one place.</p>
+
+          <div class="dashboard-toolbar">
+            <span class="dashboard-count" id="dashboard-count">0 / 12 instances</span>
+            <div class="dashboard-actions">
+              <button class="btn btn-sm btn-success" onclick="startAllInstances()" id="btn-start-all" disabled>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                Start All
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="stopAllInstances()" id="btn-stop-all">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                Stop All
+              </button>
+            </div>
+          </div>
+
+          <div class="instance-grid" id="instance-grid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- ═══ SETTINGS TAB ═══ -->
+        <div class="tab-content" id="tab-settings">
+          <h2>Settings</h2>
+          <p class="tab-desc">Application preferences and data management.</p>
+
+          <div class="settings-section">
+            <h3>Appearance</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="pref-start-view">Default View on Startup</label>
+                <select id="pref-start-view">
+                  <option value="setup">Setup</option>
+                  <option value="dashboard" selected>Dashboard</option>
+                </select>
+                <span class="form-hint">Which page to show when the app opens</span>
+              </div>
+              <div class="form-group form-check-group">
+                <label class="toggle-label">
+                  <input type="checkbox" id="pref-output-collapsed">
+                  <span class="toggle-switch"></span>
+                  Collapse output panel by default
+                </label>
+                <span class="form-hint">Start with the output panel minimized</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group form-check-group">
+                <label class="toggle-label">
+                  <input type="checkbox" id="pref-confirm-remove" checked>
+                  <span class="toggle-switch"></span>
+                  Confirm before removing instances
+                </label>
+                <span class="form-hint">Show a confirmation dialog when removing an instance</span>
+              </div>
+              <div class="form-group form-check-group">
+                <label class="toggle-label">
+                  <input type="checkbox" id="pref-auto-check" checked>
+                  <span class="toggle-switch"></span>
+                  Auto-check dependencies on startup
+                </label>
+                <span class="form-hint">Automatically run dependency check when opening the app</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3>Backup &amp; Restore</h3>
+            <p class="settings-section-desc">Export all instances and settings to a JSON file, or restore from a previously exported backup.</p>
+            <div class="settings-backup-actions">
+              <button class="btn btn-primary" onclick="exportFullBackup()">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export Full Backup
+              </button>
+              <button class="btn" onclick="importFullBackup()">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Import Backup
+              </button>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3>Data</h3>
+            <div class="settings-backup-actions">
+              <button class="btn" onclick="clearAllLogs()">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6M8,6V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/></svg>
+                Clear All Logs
+              </button>
+              <button class="btn btn-danger" onclick="resetAllData()">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                Reset Everything
+              </button>
+            </div>
+            <span class="form-hint" style="margin-top:8px; display:block;">Reset removes all instances and resets preferences to defaults. This cannot be undone.</span>
+          </div>
+        </div>
+
+        <!-- ═══ INSTANCE VIEW ═══ -->
+        <div class="tab-content" id="tab-instance">
+          <div class="instance-view-header">
+            <div class="instance-view-title">
+              <h2 id="instance-title">Instance 1</h2>
+              <span class="instance-badge" id="instance-badge">Stopped</span>
+            </div>
+            <div class="instance-view-actions">
+              <button class="btn btn-sm" onclick="renameCurrentInstance()">Rename</button>
+              <button class="btn btn-sm" onclick="cloneCurrentInstance()">Clone</button>
+              <button class="btn btn-sm btn-danger" onclick="removeCurrentInstance()">Remove</button>
+            </div>
+          </div>
+
+          <!-- Inner tab bar -->
+          <div class="inner-tab-bar" id="inner-tab-bar">
+            <button class="inner-tab active" data-itab="server">Server</button>
+            <button class="inner-tab" data-itab="display">Display</button>
+            <button class="inner-tab" data-itab="audio">Audio</button>
+            <button class="inner-tab" data-itab="network">Network</button>
+            <button class="inner-tab" data-itab="streaming">Streaming</button>
+            <button class="inner-tab" data-itab="advanced">Advanced</button>
+          </div>
+
+          <!-- ═══ SERVER ═══ -->
+          <div class="inner-tab-content active" id="itab-server">
+            <div class="settings-section">
+              <h3>Startup</h3>
+              <div class="form-row">
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-autostart">
+                    <span class="toggle-switch"></span>
+                    Auto-start on application launch
+                  </label>
+                  <span class="form-hint">Automatically start this instance when the app opens</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Identity</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-n">Server Name</label>
+                  <input type="text" id="opt-n" placeholder="UxPlay" data-arg="-n">
+                  <span class="form-hint">Name shown to AirPlay clients (default: UxPlay)</span>
+                </div>
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-nh" data-arg="-nh">
+                    <span class="toggle-switch"></span>
+                    Don't append @hostname
+                  </label>
+                  <span class="form-hint">Omit the hostname suffix from server name</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Authentication</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Auth Mode</label>
+                  <select id="opt-auth-mode">
+                    <option value="none">None (open access)</option>
+                    <option value="pin">PIN Code (-pin)</option>
+                    <option value="pw">Password (-pw)</option>
+                  </select>
+                  <span class="form-hint">Control how clients authenticate</span>
+                </div>
+                <div class="form-group" id="auth-value-group" style="display:none">
+                  <label for="opt-auth-value" id="auth-value-label">PIN / Password</label>
+                  <input type="text" id="opt-auth-value" placeholder="">
+                  <span class="form-hint" id="auth-value-hint">Leave empty for random PIN each time</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-reg" data-arg="-reg">
+                    <span class="toggle-switch"></span>
+                    Register clients (-reg)
+                  </label>
+                  <span class="form-hint">Keep a register of connected client details</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Access Control</h3>
+              <div class="form-row">
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-restrict" data-arg="-restrict">
+                    <span class="toggle-switch"></span>
+                    Restrict clients (-restrict)
+                  </label>
+                  <span class="form-hint">Only allow explicitly-allowed device IDs</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group full">
+                  <label for="opt-allow">Allowed Device IDs (-allow)</label>
+                  <input type="text" id="opt-allow" placeholder="XX:XX:XX:XX:XX:XX, YY:YY:YY:YY:YY:YY">
+                  <span class="form-hint">Comma-separated list of MAC-format device IDs</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group full">
+                  <label for="opt-block">Blocked Device IDs (-block)</label>
+                  <input type="text" id="opt-block" placeholder="XX:XX:XX:XX:XX:XX">
+                  <span class="form-hint">Comma-separated list of blocked device IDs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ DISPLAY ═══ -->
+          <div class="inner-tab-content" id="itab-display">
+            <div class="settings-section">
+              <h3>Resolution</h3>
+              <div class="form-row triple">
+                <div class="form-group">
+                  <label for="opt-sw">Width</label>
+                  <input type="number" id="opt-sw" placeholder="1920" min="320" max="3840">
+                </div>
+                <div class="form-group">
+                  <label for="opt-sh">Height</label>
+                  <input type="number" id="opt-sh" placeholder="1080" min="240" max="2160">
+                </div>
+                <div class="form-group">
+                  <label for="opt-sr">Refresh Rate (Hz)</label>
+                  <input type="number" id="opt-sr" placeholder="60" min="1" max="255">
+                </div>
+              </div>
+              <span class="form-hint">Resolution reported to AirPlay client. Default: 1920x1080@60</span>
+            </div>
+
+            <div class="settings-section">
+              <h3>Rendering</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-vs">Video Sink (-vs)</label>
+                  <select id="opt-vs">
+                    <option value="">Auto (autovideosink)</option>
+                    <option value="d3d12videosink">Direct3D 12</option>
+                    <option value="d3d11videosink">Direct3D 11</option>
+                    <option value="d3dvideosink">Direct3D (legacy)</option>
+                    <option value="glimagesink">OpenGL</option>
+                    <option value="gtksink">GTK</option>
+                    <option value="fpsdisplaysink">FPS Display</option>
+                    <option value="0">None (audio only)</option>
+                    <option value="custom">Custom...</option>
+                  </select>
+                  <span class="form-hint">Choose the video rendering backend.</span>
+                </div>
+                <div class="form-group" id="vs-custom-group" style="display:none">
+                  <label for="opt-vs-custom">Custom Videosink</label>
+                  <input type="text" id="opt-vs-custom" placeholder="e.g. d3d11videosink fullscreen-toggle-mode=alt-enter">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-vd">Video Decoder (-vd)</label>
+                  <input type="text" id="opt-vd" placeholder="Auto (decodebin)" data-arg="-vd">
+                  <span class="form-hint">Override GStreamer video decoder</span>
+                </div>
+                <div class="form-group">
+                  <label for="opt-vc">Video Converter (-vc)</label>
+                  <input type="text" id="opt-vc" placeholder="Auto (videoconvert)" data-arg="-vc">
+                  <span class="form-hint">Override GStreamer video converter</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-vp">Video Parser (-vp)</label>
+                  <input type="text" id="opt-vp" placeholder="Auto (h264parse)" data-arg="-vp">
+                  <span class="form-hint">Override GStreamer video parser</span>
+                </div>
+                <div class="form-group">
+                  <label for="opt-fps">Max FPS (-fps)</label>
+                  <input type="number" id="opt-fps" placeholder="30" min="1" max="120" data-arg="-fps">
+                  <span class="form-hint">Maximum framerate.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Options</h3>
+              <div class="form-row quad">
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-fs" data-arg="-fs">
+                    <span class="toggle-switch"></span>
+                    Fullscreen
+                  </label>
+                </div>
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-o" data-arg="-o">
+                    <span class="toggle-switch"></span>
+                    Overscanned
+                  </label>
+                </div>
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-h265" data-arg="-h265">
+                    <span class="toggle-switch"></span>
+                    H.265 / 4K
+                  </label>
+                </div>
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-FPSdata" data-arg="-FPSdata">
+                    <span class="toggle-switch"></span>
+                    FPS Data
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Transforms</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-f">Flip (-f)</label>
+                  <select id="opt-f">
+                    <option value="">None</option>
+                    <option value="H">Horizontal (mirror)</option>
+                    <option value="V">Vertical</option>
+                    <option value="I">Invert (180°)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="opt-r">Rotation (-r)</label>
+                  <select id="opt-r">
+                    <option value="">None</option>
+                    <option value="R">Right (90° CW)</option>
+                    <option value="L">Left (90° CCW)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Video Sync</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-vsync">Video Sync Mode (-vsync)</label>
+                  <select id="opt-vsync">
+                    <option value="">Default (timestamps)</option>
+                    <option value="no">Off (no timestamps)</option>
+                    <option value="custom">Custom delay (ms)...</option>
+                  </select>
+                </div>
+                <div class="form-group" id="vsync-custom-group" style="display:none">
+                  <label for="opt-vsync-custom">Sync Delay (ms)</label>
+                  <input type="text" id="opt-vsync-custom" placeholder="e.g. 20.5">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ AUDIO ═══ -->
+          <div class="inner-tab-content" id="itab-audio">
+            <div class="settings-section">
+              <h3>Audio Output</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-as">Audio Sink (-as)</label>
+                  <select id="opt-as">
+                    <option value="">Auto (autoaudiosink)</option>
+                    <option value="wasapisink">WASAPI</option>
+                    <option value="directsoundsink">DirectSound</option>
+                    <option value="0">Disable audio</option>
+                    <option value="custom">Custom...</option>
+                  </select>
+                </div>
+                <div class="form-group" id="as-custom-group" style="display:none">
+                  <label for="opt-as-custom">Custom Audiosink</label>
+                  <input type="text" id="opt-as-custom" placeholder='e.g. wasapisink device="{GUID}"'>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-al">Audio Latency (-al)</label>
+                  <input type="text" id="opt-al" placeholder="0.25" data-arg="-al">
+                  <span class="form-hint">Audio latency in seconds (0.0-10.0). Default: 0.25</span>
+                </div>
+                <div class="form-group">
+                  <label for="opt-vol">Initial Volume (-vol)</label>
+                  <input type="number" id="opt-vol" placeholder="" data-arg="-vol">
+                  <span class="form-hint">Set initial audio streaming volume</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Audio Sync</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-async">Audio Sync Mode (-async)</label>
+                  <select id="opt-async">
+                    <option value="">Default (no timestamps)</option>
+                    <option value="on">On (timestamps)</option>
+                    <option value="no">Off</option>
+                    <option value="custom">Custom delay (ms)...</option>
+                  </select>
+                </div>
+                <div class="form-group" id="async-custom-group" style="display:none">
+                  <label for="opt-async-custom">Audio Sync Delay (ms)</label>
+                  <input type="text" id="opt-async-custom" placeholder="e.g. 20.5">
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Volume Control</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-db">Volume Rescale (-db)</label>
+                  <input type="text" id="opt-db" placeholder="e.g. -50:10" data-arg="-db">
+                  <span class="form-hint">Rescale AirPlay volume range from low:high</span>
+                </div>
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-taper" data-arg="-taper">
+                    <span class="toggle-switch"></span>
+                    Tapered Volume (-taper)
+                  </label>
+                  <span class="form-hint">Use tapered volume-control profile</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Cover Art &amp; Metadata</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-ca-mode">Cover Art (-ca)</label>
+                  <select id="opt-ca-mode">
+                    <option value="">Disabled</option>
+                    <option value="display">Display in UxPlay</option>
+                    <option value="file">Export to file</option>
+                  </select>
+                </div>
+                <div class="form-group" id="ca-file-group" style="display:none">
+                  <label for="opt-ca-file">Cover Art File</label>
+                  <div class="input-with-btn">
+                    <input type="text" id="opt-ca-file" placeholder="Path to output file">
+                    <button class="btn btn-xs" onclick="browseFile('opt-ca-file')">Browse</button>
+                  </div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-md">Metadata File (-md)</label>
+                  <div class="input-with-btn">
+                    <input type="text" id="opt-md" placeholder="Path to metadata output file" data-arg="-md">
+                    <button class="btn btn-xs" onclick="browseFile('opt-md')">Browse</button>
+                  </div>
+                  <span class="form-hint">Export audio metadata to file</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ NETWORK ═══ -->
+          <div class="inner-tab-content" id="itab-network">
+            <div class="settings-section">
+              <h3>Ports</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-p">Port Configuration (-p)</label>
+                  <select id="opt-p-mode">
+                    <option value="">Dynamic (random)</option>
+                    <option value="legacy">Legacy (7100, 7000, 7001)</option>
+                    <option value="single">Single base port</option>
+                    <option value="custom">Custom ports</option>
+                  </select>
+                  <span class="form-hint">Ports must be open if behind a firewall</span>
+                </div>
+                <div class="form-group" id="port-value-group" style="display:none">
+                  <label for="opt-p-value">Port(s)</label>
+                  <input type="text" id="opt-p-value" placeholder="e.g. 35000 or 35000,35001,35002">
+                  <span class="form-hint">Single number or comma-separated (1024-65535)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Device Identity</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-m-mode">MAC Address (-m)</label>
+                  <select id="opt-m-mode">
+                    <option value="">Hardware (default)</option>
+                    <option value="random">Random</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+                <div class="form-group" id="mac-custom-group" style="display:none">
+                  <label for="opt-m-value">Custom MAC</label>
+                  <input type="text" id="opt-m-value" placeholder="XX:XX:XX:XX:XX:XX">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-key">Key File (-key)</label>
+                  <div class="input-with-btn">
+                    <input type="text" id="opt-key" placeholder="Optional persistent key file">
+                    <button class="btn btn-xs" onclick="browseFile('opt-key')">Browse</button>
+                  </div>
+                  <span class="form-hint">Persistent public key for -pin auth</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-dacp">DACP Export File (-dacp)</label>
+                  <div class="input-with-btn">
+                    <input type="text" id="opt-dacp" placeholder="Path to DACP export file" data-arg="-dacp">
+                    <button class="btn btn-xs" onclick="browseFile('opt-dacp')">Browse</button>
+                  </div>
+                  <span class="form-hint">Export DACP-ID and Active-Remote key</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Bluetooth Beacon</h3>
+              <div class="form-row">
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-ble" data-arg="-ble">
+                    <span class="toggle-switch"></span>
+                    Enable BLE Service Discovery (-ble)
+                  </label>
+                  <span class="form-hint">Alternative to DNS-SD. Requires Bluetooth 4.0+</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ STREAMING ═══ -->
+          <div class="inner-tab-content" id="itab-streaming">
+            <div class="settings-section">
+              <h3>HLS (YouTube Streaming)</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-hls">HLS Mode (-hls)</label>
+                  <select id="opt-hls">
+                    <option value="">Disabled</option>
+                    <option value="3">Enabled (playbin v3, recommended)</option>
+                    <option value="2">Enabled (playbin v2, fallback)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="opt-lang">Language Preferences (-lang)</label>
+                  <input type="text" id="opt-lang" placeholder="e.g. fr:es:en" data-arg="-lang">
+                  <span class="form-hint">Preferred languages (colon-separated)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Recording</h3>
+              <div class="form-row">
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-mp4-enable">
+                    <span class="toggle-switch"></span>
+                    Record to MP4 (-mp4)
+                  </label>
+                  <span class="form-hint">Record to .mp4 file while watching</span>
+                </div>
+                <div class="form-group" id="mp4-file-group" style="display:none">
+                  <label for="opt-mp4-file">Recording Filename</label>
+                  <input type="text" id="opt-mp4-file" placeholder="recording (default)">
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>RTP Forwarding</h3>
+              <div class="form-row">
+                <div class="form-group full">
+                  <label for="opt-vrtp">Video RTP Forward (-vrtp)</label>
+                  <input type="text" id="opt-vrtp" placeholder="GStreamer pipeline for video RTP" data-arg="-vrtp">
+                  <span class="form-hint">Forward decrypted video to external renderer</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group full">
+                  <label for="opt-artp">Audio RTP Forward (-artp)</label>
+                  <input type="text" id="opt-artp" placeholder="GStreamer pipeline for audio RTP" data-arg="-artp">
+                  <span class="form-hint">Forward audio as L16 RTP packets</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ ADVANCED ═══ -->
+          <div class="inner-tab-content" id="itab-advanced">
+            <div class="settings-section">
+              <h3>Connection Behavior</h3>
+              <div class="form-row triple">
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-nc" data-arg="-nc">
+                    <span class="toggle-switch"></span>
+                    No close window (-nc)
+                  </label>
+                  <span class="form-hint">Don't close window on "Stop Mirroring"</span>
+                </div>
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-nohold" data-arg="-nohold">
+                    <span class="toggle-switch"></span>
+                    No hold (-nohold)
+                  </label>
+                  <span class="form-hint">Drop current client when new one connects</span>
+                </div>
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-nofreeze" data-arg="-nofreeze">
+                    <span class="toggle-switch"></span>
+                    No freeze (-nofreeze)
+                  </label>
+                  <span class="form-hint">Close video window on timeout</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-reset">Reset Timeout (-reset)</label>
+                  <input type="number" id="opt-reset" placeholder="15" min="0" data-arg="-reset">
+                  <span class="form-hint">Seconds before reset (0 = no limit)</span>
+                </div>
+                <div class="form-group">
+                  <label for="opt-t">Relaunch Timeout (-t)</label>
+                  <input type="number" id="opt-t" placeholder="" min="0" data-arg="-t">
+                  <span class="form-hint">Relaunch if no connections in N seconds</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Video Decoding</h3>
+              <div class="form-row triple">
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-avdec" data-arg="-avdec">
+                    <span class="toggle-switch"></span>
+                    Software decode (-avdec)
+                  </label>
+                </div>
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-v4l2" data-arg="-v4l2">
+                    <span class="toggle-switch"></span>
+                    V4L2 (-v4l2)
+                  </label>
+                </div>
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-bt709" data-arg="-bt709">
+                    <span class="toggle-switch"></span>
+                    BT.709 fix (-bt709)
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Debug &amp; Diagnostics</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="opt-d">Debug Output (-d)</label>
+                  <select id="opt-d">
+                    <option value="">Disabled</option>
+                    <option value="full">Full debug</option>
+                    <option value="1">Debug (suppress packet data)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="opt-rc">Config File (-rc)</label>
+                  <div class="input-with-btn">
+                    <input type="text" id="opt-rc" placeholder="Optional startup file path" data-arg="-rc">
+                    <button class="btn btn-xs" onclick="browseFile('opt-rc')">Browse</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Dump / Recording (Debug)</h3>
+              <div class="form-row">
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-vdmp" data-arg="-vdmp">
+                    <span class="toggle-switch"></span>
+                    Dump Video (-vdmp)
+                  </label>
+                </div>
+                <div class="form-group form-check-group">
+                  <label class="toggle-label">
+                    <input type="checkbox" id="opt-admp" data-arg="-admp">
+                    <span class="toggle-switch"></span>
+                    Dump Audio (-admp)
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action bar (visible when viewing an instance) -->
+      <div class="action-bar" id="action-bar">
+        <div class="action-left">
+          <div class="cmd-preview" id="cmd-preview">
+            <code id="cmd-text">uxplay</code>
+          </div>
+        </div>
+        <div class="action-right">
+          <button class="btn btn-success btn-run" id="btn-start" onclick="startCurrentInstance()" disabled>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            Start
+          </button>
+          <button class="btn btn-danger btn-run" id="btn-stop" onclick="stopCurrentInstance()" disabled>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+            Stop
+          </button>
+        </div>
+      </div>
+
+      <!-- Output panel -->
+      <div class="output-panel" id="output-panel">
+        <div class="output-header">
+          <span>Output</span>
+          <div class="output-controls">
+            <button class="btn-icon" onclick="clearLog()" title="Clear log">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6M8,6V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/></svg>
+            </button>
+            <button class="btn-icon" onclick="toggleOutput()" title="Toggle output panel">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 12,15 18,9"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="output-body" id="output-body">
+          <div class="output-content" id="output-content">
+            <div class="log-line dim">Welcome to NodeUxPlay. Click "Re-check" or "Full Auto Setup" to get started.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

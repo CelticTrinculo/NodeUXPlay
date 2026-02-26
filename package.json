@@ -1,0 +1,15 @@
+{
+  "name": "node-uxplay",
+  "version": "1.0.0",
+  "description": "A GUI wrapper for UxPlay - AirPlay Mirror/Audio server for Windows",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "author": "HBIDamian",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "electron": "^33.0.0"
+  }
+}
